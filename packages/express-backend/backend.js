@@ -97,6 +97,10 @@ app.delete("/users/:id", (req, res) => {
     res.send();
 });
 
+app.get("/users", (req, res) => {
+    res.send(users);
+});
+
 app.listen(port, () => {
     console.log(
         `Example app listening at http://localhost:${port}`
