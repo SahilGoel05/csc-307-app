@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 
 const app = express();
 const port = 8000;
@@ -32,6 +33,7 @@ const users = {
     ]
 };
 
+app.use(cors());
 app.use(express.json());
 
 const findUsersByJob = (job) => {
@@ -48,12 +50,23 @@ const findUserByName = (name) => {
 };
 const findUserById = (id) =>
     users["users_list"].find((user) => user["id"] === id);
+const getRandomId = () => {
+    return Math.floor(Math.random() * 1000)
+}
 const addUser = (user) => {
-    users["users_list"].push(user);
-    return user;
+    const userWithId = {...user, id: `${getRandomId()}`}
+    users["users_list"].push(userWithId);
+    return userWithId;
 };
 const deleteUser = (id) => {
+    const initialLength = users["users_list"].length;
     users["users_list"] = users["users_list"].filter((user) => user["id"] !== id);
+
+    if (users["users_list"].length < initialLength) {
+        return 204
+    } else {
+        return 404
+    }
 };
 
 app.get("/", (req, res) => {
@@ -78,13 +91,13 @@ app.get("/users/:id", (req, res) => {
 });
 app.post("/users", (req, res) => {
     const userToAdd = req.body;
-    addUser(userToAdd);
-    res.send();
+    const newUser = addUser(userToAdd);
+    res.status(201).send(newUser);
 });
 app.delete("/users/:id", (req, res) => {
     const id = req.params["id"]; //or req.params.id
-    deleteUser(id);
-    res.send();
+    const returnStatus = deleteUser(id);
+    res.status(returnStatus).send();
 });
 
 app.listen(port, () => {
